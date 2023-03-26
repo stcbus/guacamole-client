@@ -1,0 +1,2 @@
+commons-beanutils:commons-beanutils-core:jar:1.9.4
+commons-beanutils:commons-beanutils:jar:1.9.4
