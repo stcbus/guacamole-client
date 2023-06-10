@@ -64,9 +64,7 @@ angular.module('guacRestrict').controller('timeRestrictionFieldController', ['$s
         { id : '5', day : 'Friday' },
         { id : '6', day : 'Saturday' },
         { id : '7', day : 'Sunday' },
-        { id : '*', day : 'All days' },
-        { id : 'wd', day: 'Week days' },
-        { id : 'we', day: 'Week end' }
+        { id : '*', day : 'All days' }
     ];
     
     /**
@@ -118,7 +116,7 @@ angular.module('guacRestrict').controller('timeRestrictionFieldController', ['$s
             return restrictions;
         
         // Set up the RegEx and split the string using the separator.
-        const restrictionRegex = new RegExp('^([1-7*]|(?:[w][ed]))(?::((?:[01][0-9]|2[0-3])[0-5][0-9])\-((?:[01][0-9]|2[0-3])[0-5][0-9]))$');
+        const restrictionRegex = new RegExp('^([1-7*])(?::((?:[01][0-9]|2[0-3])[0-5][0-9])\-((?:[01][0-9]|2[0-3])[0-5][0-9]))$');
         var restrArray = restrString.split(";");
 
         // Loop through split string and process each item
