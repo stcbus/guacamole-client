@@ -1010,6 +1010,16 @@ associate_apisessiontimeout() {
     set_optional_property "api-session-timeout" "$API_SESSION_TIMEOUT"
 }
 
+##  
+## Configures auth-restrict plugin
+##  
+associate_auth_restrict() {
+
+    # Add required .jar files to GUACAMOLE_EXT
+    ln -s /opt/guacamole/auth-restrict/guacamole-auth-restrict*.jar "$GUACAMOLE_EXT"
+}
+
+
 ##
 ## Starts Guacamole under Tomcat, replacing the current process with the
 ## Tomcat process. As the current process will be replaced, this MUST be the
@@ -1177,6 +1187,11 @@ fi
 # Add in the history recording storage extension if configured
 if [ -n "$RECORDING_SEARCH_PATH" ]; then
     associate_recordings
+fi
+
+# Use Auth_Restrict if specified.
+if [ "$AUTH_RESTRICT_ENABLED" = "true" ]; then
+    associate_auth_restrict
 fi
 
 #
