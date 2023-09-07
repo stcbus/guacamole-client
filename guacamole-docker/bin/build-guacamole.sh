@@ -191,3 +191,12 @@ if [ -f extensions/guacamole-history-recording-storage/target/guacamole-history-
     mkdir -p "$DESTINATION/recordings"
     cp extensions/guacamole-history-recording-storage/target/guacamole-history-recording-storage*.jar "$DESTINATION/recordings"
 fi
+
+#
+# Copy login restriction extension if it was built
+#
+
+if [ -f extensions/guacamole-auth-restrict/target/guacamole-auth-restrict*.jar ]; then
+    mkdir -p "$DESTINATION/auth-restrict"
+    cp extensions/guacamole-auth-restrict/target/guacamole-auth-restrict*.jar "$DESTINATION/auth-restrict"
+fi
