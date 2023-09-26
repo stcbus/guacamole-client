@@ -149,13 +149,13 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
     var currentFrame = -1;
 
     /**
-     * The timestamp of the frame when playback began, in milliseconds. If
+     * The position of the recording when playback began, in milliseconds. If
      * playback is not in progress, this will be null.
      *
      * @private
      * @type {number}
      */
-    var startVideoTimestamp = null;
+    var startVideoPosition = null;
 
     /**
      * The real-world timestamp when playback began, in milliseconds. If
@@ -376,6 +376,38 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
     playbackClient.getDisplay().showCursor(false);
 
     /**
+     * A key event interpreter to split all key events in this recording into
+     * human-readable batches of text. Constrcution is deferred until the first
+     * event is processed, to enable recording-relative timestamps.
+     *
+     * @type {!Guacamole.KeyEventInterpreter}
+     */
+    var keyEventInterpreter = null;
+
+    /**
+     * Initialize the key interpreter. This function should be called only once
+     * with the first timestamp in the recording as an argument.
+     *
+     * @private
+     * @param {!number} startTimestamp
+     *     The timestamp of the first frame in the recording, i.e. the start of
+     *     the recording.
+     */
+    function initializeKeyInterpreter(startTimestamp) {
+
+        keyEventInterpreter = new Guacamole.KeyEventInterpreter(null, startTimestamp);
+
+        // Pass through any received batches to the recording ontext handler
+        keyEventInterpreter.onbatch = function onbatch(batch) {
+
+            // Pass the batch through if a handler is set
+            if (recording.ontext)
+                recording.ontext(batch);
+
+        };
+    }
+
+    /**
      * Handles a newly-received instruction, whether from the main Blob or a
      * tunnel, adding new frames and keyframes as necessary. Load progress is
      * reported via onprogress automatically.
@@ -406,6 +438,11 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
             frames.push(frame);
             frameStart = frameEnd;
 
+            // If this is the first frame, intialize the key event interpreter
+            // with the timestamp of the first frame
+            if (frames.length === 1)
+                initializeKeyInterpreter(timestamp);
+
             // This frame should eventually become a keyframe if enough data
             // has been processed and enough recording time has elapsed, or if
             // this is the absolute first frame
@@ -413,6 +450,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
                     && timestamp - frames[lastKeyframe].timestamp >= KEYFRAME_TIME_INTERVAL)) {
                 frame.keyframe = true;
                 lastKeyframe = frames.length - 1;
+
             }
 
             // Notify that additional content is available
@@ -421,6 +459,8 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
 
         }
 
+        else if (opcode === 'key')
+            keyEventInterpreter.handleKeyEvent(args);
     };
 
     /**
@@ -486,6 +526,12 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
                     recordingBlob = new Blob([recordingBlob, instructionBuffer]);
                     instructionBuffer = '';
                 }
+
+                // If there's any typed text that's yet to be sent to the ontext
+                // handler, send it now
+                var batch = keyEventInterpreter.getCurrentBatch();
+                if (batch && recording.ontext)
+                    recording.ontext(batch);
 
                 // Consider recording loaded if tunnel has closed without errors
                 if (!errorEncountered)
@@ -750,21 +796,31 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
             // Pull the upcoming frame
             var next = frames[currentFrame + 1];
 
-            // The position at which the next frame should be rendered, taking
-            // into account any accumulated delays from rendering frames so far
-            var nextFramePosition = next.timestamp - startVideoTimestamp + startRealTimestamp;
+            // The number of elapsed milliseconds on the clock since playback began
+            var realLifePlayTime = Date.now() - startRealTimestamp;
 
-            // The position at which the refresh interval would induce an
-            // update to the current recording position, rounded to the nearest
-            // whole multiple of refreshInterval to ensure consistent timing
-            // for refresh intervals even with inconsistent frame timing
-            var nextRefreshPosition = refreshInterval > 0 ? refreshInterval * (
-                Math.floor((currentPosition + refreshInterval) / refreshInterval)
-            ) : nextFramePosition;
+            // The number of milliseconds between the recording position when
+            // playback started and the position of the next frame
+            var timestampOffset = (
+                    toRelativeTimestamp(next.timestamp) - startVideoPosition);
+
+            // The delay until the next frame should be rendered, taking into
+            // account any accumulated delays from rendering frames so far
+            var nextFrameDelay = timestampOffset - realLifePlayTime;
+
+            // The delay until the refresh interval would induce an update to
+            // the current recording position, rounded to the nearest whole
+            // multiple of refreshInterval to ensure consistent timing for
+            // refresh intervals even with inconsistent frame timing
+            var nextRefreshDelay = refreshInterval >= 0
+                    ? (refreshInterval * (Math.floor(
+                        (currentPosition + refreshInterval) / refreshInterval))
+                    ) - currentPosition
+                    : nextFrameDelay;
 
             // If the next frame will occur before the next refresh interval,
             // advance to the frame after the appropriate delay
-            if (nextFramePosition <= nextRefreshPosition)
+            if (nextFrameDelay <= nextRefreshDelay)
 
                 seekToFrame(currentFrame + 1, function frameDelayElapsed() {
 
@@ -772,7 +828,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
                     lastUpdateTimestamp = Date.now();
                     continuePlayback();
 
-                }, Date.now() + (nextFramePosition - currentPosition));
+                }, Date.now() + nextFrameDelay);
 
             // The position needs to be incremented before the next frame
             else {
@@ -785,7 +841,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
                     updateTimeout = null;
 
                     // Update the position
-                    currentPosition = nextRefreshPosition;
+                    currentPosition += nextRefreshDelay;
 
                     // Notifiy the new position using the onseek handler
                     if (recording.onseek)
@@ -795,7 +851,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
                     lastUpdateTimestamp = Date.now();
                     continuePlayback();
 
-                }, nextRefreshPosition - currentPosition);
+                }, nextRefreshDelay);
             }
 
         }
@@ -861,6 +917,16 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
      * @event
      */
     this.onpause = null;
+
+    /**
+     * Fired whenever a new batch of typed text extracted from key events
+     * is available.
+     *
+     * @event
+     * @param {!Guacamole.KeyEventInterpreter.KeyEventBatch} batch
+     *     The batch of extracted text.
+     */
+    this.ontext = null;
 
     /**
      * Fired whenever the playback position within the recording changes.
@@ -944,7 +1010,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
      *     true if playback is currently in progress, false otherwise.
      */
     this.isPlaying = function isPlaying() {
-        return !!startVideoTimestamp;
+        return !!startRealTimestamp;
     };
 
     /**
@@ -956,13 +1022,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
      */
     this.getPosition = function getPosition() {
 
-        // Position is simply zero if playback has not started at all
-        if (currentFrame === -1)
-            return 0;
-
-        // Return current position as a millisecond timestamp relative to the
-        // start of the recording
-        return toRelativeTimestamp(frames[currentFrame].timestamp);
+        return currentPosition;
 
     };
 
@@ -1006,8 +1066,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
 
             // Store timestamp of playback start for relative scheduling of
             // future frames
-            var next = frames[currentFrame + 1];
-            startVideoTimestamp = next.timestamp;
+            startVideoPosition = currentPosition;
             startRealTimestamp = Date.now();
 
             // Begin playback of video
@@ -1125,7 +1184,7 @@ Guacamole.SessionRecording = function SessionRecording(source, refreshInterval) 
 
             // Playback is stopped
             lastUpdateTimestamp = null;
-            startVideoTimestamp = null;
+            startVideoPosition = null;
             startRealTimestamp = null;
 
         }
