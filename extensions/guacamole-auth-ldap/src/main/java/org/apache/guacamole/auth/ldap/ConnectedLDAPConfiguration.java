@@ -62,15 +62,16 @@ public class ConnectedLDAPConfiguration implements LDAPConfiguration, AutoClosea
      * longer needed.
      *
      * @param config
-     *      The LDAPConfiguration to wrap.
+     *                   The LDAPConfiguration to wrap.
      *
      * @param bindDn
-     *      The LDAP DN that was used to bind with the LDAP server to produce
-     *      the given LdapNetworkConnection.
+     *                   The LDAP DN that was used to bind with the LDAP server to
+     *                   produce
+     *                   the given LdapNetworkConnection.
      *
      * @param connection
-     *      The connection to the LDAP server represented by the given
-     *      configuration.
+     *                   The connection to the LDAP server represented by the given
+     *                   configuration.
      */
     public ConnectedLDAPConfiguration(LDAPConfiguration config, Dn bindDn, LdapNetworkConnection connection) {
         this.config = config;
@@ -85,8 +86,8 @@ public class ConnectedLDAPConfiguration implements LDAPConfiguration, AutoClosea
      * connected.
      *
      * @return
-     *     The LdapNetworkConnection for the connection to the LDAP server
-     *     represented by this configuration.
+     *         The LdapNetworkConnection for the connection to the LDAP server
+     *         represented by this configuration.
      */
     public LdapNetworkConnection getLDAPConnection() {
         return connection;
@@ -98,7 +99,7 @@ public class ConnectedLDAPConfiguration implements LDAPConfiguration, AutoClosea
      * ConnectedLDAPConfiguration.
      *
      * @return
-     *     The LDAP DN that was used to bind with the LDAP server.
+     *         The LDAP DN that was used to bind with the LDAP server.
      */
     public Dn getBindDN() {
         return bindDn;
@@ -163,7 +164,7 @@ public class ConnectedLDAPConfiguration implements LDAPConfiguration, AutoClosea
     public EncryptionMethod getEncryptionMethod() throws GuacamoleException {
         return config.getEncryptionMethod();
     }
-    
+
     @Override
     public LDAPSSLProtocol getSslProtocol() throws GuacamoleException {
         return config.getSslProtocol();
@@ -222,6 +223,11 @@ public class ConnectedLDAPConfiguration implements LDAPConfiguration, AutoClosea
     @Override
     public MemberAttributeType getMemberAttributeType() throws GuacamoleException {
         return config.getMemberAttributeType();
+    }
+
+    @Override
+    public boolean getNestedGroups() throws GuacamoleException {
+        return config.getNestedGroups();
     }
 
 }
