@@ -34,7 +34,7 @@ import org.apache.guacamole.GuacamoleServerException;
  * required (such as {@link #getUserBaseDN()}), an exception is thrown.
  */
 public class DefaultLDAPConfiguration implements LDAPConfiguration {
-    
+
     @Override
     public String appliesTo(String username) {
         return null;
@@ -89,7 +89,7 @@ public class DefaultLDAPConfiguration implements LDAPConfiguration {
     public EncryptionMethod getEncryptionMethod() {
         return EncryptionMethod.NONE;
     }
-    
+
     @Override
     public LDAPSSLProtocol getSslProtocol() {
         return LDAPSSLProtocol.TLSv1_3;
@@ -139,7 +139,7 @@ public class DefaultLDAPConfiguration implements LDAPConfiguration {
     public List<String> getAttributes() {
         return Collections.<String>emptyList();
     }
-    
+
     @Override
     public String getMemberAttribute() {
         return "member";
@@ -149,6 +149,11 @@ public class DefaultLDAPConfiguration implements LDAPConfiguration {
     public MemberAttributeType getMemberAttributeType()
             throws GuacamoleException {
         return MemberAttributeType.DN;
+    }
+
+    @Override
+    public boolean getNestedGroups() {
+        return false;
     }
 
 }

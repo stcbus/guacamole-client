@@ -45,7 +45,7 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     @JsonProperty("match-usernames")
     @JsonFormat(with = ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<Pattern> matchUsernames;
-    
+
     /**
      * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_HOSTNAME}. If
      * not set within the YAML, this will be null.
@@ -61,7 +61,8 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     private Integer port;
 
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_USERNAME_ATTRIBUTES}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_USERNAME_ATTRIBUTES}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("username-attribute")
@@ -90,7 +91,8 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     private String groupBaseDn;
 
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_GROUP_NAME_ATTRIBUTES}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_GROUP_NAME_ATTRIBUTES}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("group-name-attribute")
@@ -105,7 +107,8 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     private String searchBindDn;
 
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_SEARCH_BIND_PASSWORD}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_SEARCH_BIND_PASSWORD}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("search-bind-password")
@@ -117,7 +120,7 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
      */
     @JsonProperty("encryption-method")
     private String encryptionMethod;
-    
+
     /**
      * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_SSL_PROTOCOL}. If
      * not set within the YAML, this will be null, and will default to the value
@@ -127,14 +130,16 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     private String sslProtocol;
 
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_MAX_SEARCH_RESULTS}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_MAX_SEARCH_RESULTS}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("max-search-results")
     private Integer maxSearchResults;
 
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_DEREFERENCE_ALIASES}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_DEREFERENCE_ALIASES}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("dereference-aliases")
@@ -155,14 +160,16 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     private Integer maxReferralHops;
 
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_USER_SEARCH_FILTER}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_USER_SEARCH_FILTER}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("user-search-filter")
     private String userSearchFilter;
-    
+
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_GROUP_SEARCH_FILTER}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_GROUP_SEARCH_FILTER}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("group-search-filter")
@@ -198,11 +205,19 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     private String memberAttribute;
 
     /**
-     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_MEMBER_ATTRIBUTE_TYPE}.
+     * The raw YAML value of
+     * {@link LDAPGuacamoleProperties#LDAP_MEMBER_ATTRIBUTE_TYPE}.
      * If not set within the YAML, this will be null.
      */
     @JsonProperty("member-attribute-type")
     private String memberAttributeType;
+
+    /**
+     * The raw YAML value of {@link LDAPGuacamoleProperties#LDAP_NESTED_GROUPS}.
+     * If not set within the YAML, this will be null.
+     */
+    @JsonProperty("nested-groups")
+    private Boolean nestedGroups;
 
     /**
      * The default configuration options for all parameters.
@@ -215,7 +230,7 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
      * DefaultSupplier may throw a {@link GuacamoleException}.
      *
      * @param <T>
-     *    The type of value returned by this DefaultSupplier.
+     *            The type of value returned by this DefaultSupplier.
      */
     @FunctionalInterface
     private interface DefaultSupplier<T> {
@@ -225,10 +240,11 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
          * returned is not cached and may be non-deterministic.
          *
          * @return
-         *     The value supplied by this DefaultSupplier.
+         *         The value supplied by this DefaultSupplier.
          *
          * @throws GuacamoleException
-         *     If an error occurs while producing/retrieving the value.
+         *                            If an error occurs while producing/retrieving the
+         *                            value.
          */
         T get() throws GuacamoleException;
 
@@ -239,21 +255,23 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
      * is returned.
      *
      * @param <T>
-     *     The type of value accepted and returned.
+     *                     The type of value accepted and returned.
      *
      * @param value
-     *     The possibly null value to return if non-null.
+     *                     The possibly null value to return if non-null.
      *
      * @param defaultValue
-     *     A function which supplies the value to return if the provided value
-     *     is null.
-     *     
+     *                     A function which supplies the value to return if the
+     *                     provided value
+     *                     is null.
+     * 
      * @return
-     *     The provided value, if non-null, otherwise the provided default
-     *     value.
+     *         The provided value, if non-null, otherwise the provided default
+     *         value.
      *
      * @throws GuacamoleException
-     *     If an error occurs while producing/retrieving the default value.
+     *                            If an error occurs while producing/retrieving the
+     *                            default value.
      */
     private <T> T withDefault(T value, DefaultSupplier<T> defaultValue)
             throws GuacamoleException {
@@ -265,25 +283,28 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
      * default value is returned.
      *
      * @param <T>
-     *     The type of value accepted and returned.
+     *                     The type of value accepted and returned.
      *
      * @param property
-     *     The GuacamoleProperty implementation to use to parse the provided
-     *     String value.
+     *                     The GuacamoleProperty implementation to use to parse the
+     *                     provided
+     *                     String value.
      *
      * @param value
-     *     The possibly null value to return if non-null.
+     *                     The possibly null value to return if non-null.
      *
      * @param defaultValue
-     *     A function which supplies the value to return if the provided value
-     *     is null.
-     *     
+     *                     A function which supplies the value to return if the
+     *                     provided value
+     *                     is null.
+     * 
      * @return
-     *     The provided value, if non-null, otherwise the provided default
-     *     value.
+     *         The provided value, if non-null, otherwise the provided default
+     *         value.
      *
      * @throws GuacamoleException
-     *     If an error occurs while producing/retrieving the default value.
+     *                            If an error occurs while producing/retrieving the
+     *                            default value.
      */
     private <T> T withDefault(GuacamoleProperty<T> property, String value,
             DefaultSupplier<T> defaultValue)
@@ -297,8 +318,9 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
      * of {@link DefaultLDAPConfiguration} will be used.
      *
      * @param defaultConfig
-     *     The LDAPConfiguration to use for the default values of any omitted
-     *     configuration options.
+     *                      The LDAPConfiguration to use for the default values of
+     *                      any omitted
+     *                      configuration options.
      */
     public void setDefaults(LDAPConfiguration defaultConfig) {
         this.defaultConfig = defaultConfig;
@@ -310,7 +332,7 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
         // Match any user by default
         if (matchUsernames == null || matchUsernames.isEmpty())
             return username;
-        
+
         for (Pattern pattern : matchUsernames) {
             Matcher matcher = pattern.matcher(username);
             if (matcher.matches())
@@ -374,7 +396,7 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
         return withDefault(LDAPGuacamoleProperties.LDAP_ENCRYPTION_METHOD,
                 encryptionMethod, defaultConfig::getEncryptionMethod);
     }
-    
+
     @Override
     public LDAPSSLProtocol getSslProtocol() throws GuacamoleException {
         return withDefault(LDAPGuacamoleProperties.LDAP_SSL_PROTOCOL,
@@ -428,7 +450,7 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     public Collection<String> getAttributes() throws GuacamoleException {
         return withDefault(userAttributes, defaultConfig::getAttributes);
     }
-    
+
     @Override
     public String getMemberAttribute() throws GuacamoleException {
         return withDefault(memberAttribute, defaultConfig::getMemberAttribute);
@@ -438,6 +460,11 @@ public class JacksonLDAPConfiguration implements LDAPConfiguration {
     public MemberAttributeType getMemberAttributeType() throws GuacamoleException {
         return withDefault(LDAPGuacamoleProperties.LDAP_MEMBER_ATTRIBUTE_TYPE,
                 memberAttributeType, defaultConfig::getMemberAttributeType);
+    }
+
+    @Override
+    public boolean getNestedGroups() throws GuacamoleException {
+        return withDefault(nestedGroups, defaultConfig::getNestedGroups);
     }
 
 }
